@@ -4,29 +4,12 @@ const Matiere = require('../model/matiere');
 
 let lastInsertedId = 0; // Variable globale pour stocker la dernière ID ajoutée
 
-// Récupérer tous les assignments (GET)
-// function getAssignments(req, res) {
-//     var aggregateQuery = Assignment.aggregate();
-//     Assignment.aggregatePaginate(aggregateQuery,
-//         {
-//             page: parseInt(req.query.page) || 1,
-//             limit: parseInt(req.query.limit) || 10,
-//         },
-//         (err, assignments) => {
-//             if (err) {
-//                 res.send(err);
-//             }
-
-//             res.send(assignments);
-//         }
-//     );
-// }
-
-
-// Route GET pour récupérer les données des assignments avec les données des élèves et des matières associées
 async function getAssignments(req, res) {
     try {
-        var aggregateQuery = Assignment.aggregate([
+        const searchTerm = req.query.search;
+
+        // Commencez par les jointures
+        let aggregateQuery = [
             {
                 $lookup: {
                     from: 'eleves',
@@ -49,25 +32,42 @@ async function getAssignments(req, res) {
             {
                 $unwind: '$matiere',
             },
-            {
-                $project: {
-                    _id: 0,
-                    id: 1,
-                    nom: 1,
-                    dateDeRendu: 1,
-                    rendu: 1,
-                    note: 1,
-                    auteur: '$eleve.nom',
-                    remarques: '$eleve.remarques',
-                    matiere: {
-                        nom_matiere: '$matiere.nom_matiere',
-                        image_matiere: '$matiere.image_matiere',
-                        image_prof: '$matiere.image_prof',
-                    },
+        ];
+
+        // Ajout d'une étape de filtrage si un terme de recherche est fourni
+        if (searchTerm) {
+            const searchRegex = new RegExp(searchTerm, 'i'); // Expression régulière pour la recherche insensible à la casse
+            aggregateQuery.push({
+                $match: {
+                    $or: [
+                        { nom: searchRegex },
+                        { 'eleve.nom': searchRegex },
+                        { 'matiere.nom_matiere': searchRegex },
+                    ]
+                }
+            });
+        }
+
+        // Ajoutez la projection à la fin
+        aggregateQuery.push({
+            $project: {
+                _id: 0,
+                id: 1,
+                nom: 1,
+                dateDeRendu: 1,
+                rendu: 1,
+                note: 1,
+                auteur: '$eleve.nom',
+                remarques: '$eleve.remarques',
+                matiere: {
+                    nom_matiere: '$matiere.nom_matiere',
+                    image_matiere: '$matiere.image_matiere',
+                    image_prof: '$matiere.image_prof',
                 },
             },
-        ]);
+        });
 
+        // Suite de votre logique de pagination
         let page = parseInt(req.query.page) || 1;
         let limit = parseInt(req.query.limit) || 10;
 
@@ -77,9 +77,17 @@ async function getAssignments(req, res) {
             limit = await Assignment.countDocuments();
         }
 
-        const assignments = await Assignment.aggregatePaginate(aggregateQuery, { page, limit });
-        res.status(200).json(assignments);
+        const aggregate = Assignment.aggregate(aggregateQuery);
+        const options = { page, limit };
 
+        await Assignment.aggregatePaginate(aggregate, options)
+            .then(results => {
+                res.status(200).json(results);
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des assignments:', error);
+                res.status(500).json({ message: 'Erreur serveur' });
+            });
     } catch (error) {
         console.error('Erreur lors de la récupération des assignments:', error);
         res.status(500).json({ message: 'Erreur serveur' });
@@ -95,25 +103,6 @@ function getAssignment(req, res) {
         res.json(assignment);
     })
 }
-
-// Ajout d'un assignment (POST)
-// function postAssignment(req, res){
-//     let assignment = new Assignment();
-//     assignment.id = req.body.id;
-//     assignment.nom = req.body.nom;
-//     assignment.dateDeRendu = req.body.dateDeRendu;
-//     assignment.rendu = req.body.rendu;
-
-//     console.log("POST assignment reçu :");
-//     console.log(assignment)
-
-//     assignment.save( (err) => {
-//         if(err){
-//             res.send('cant post assignment ', err);
-//         }
-//         res.json({ message: `${assignment.nom} saved!`})
-//     })
-// }
 
 async function postAssignment(req, res) {
     try {
@@ -184,10 +173,10 @@ function updateAssignmentByName(req, res) {
     const critereRecherche = { nom: req.body._id };
     let modification = {};
     if (req.body.nom) {
-        modification = {$set: {nom: req.body.nom}};
+        modification = { $set: { nom: req.body.nom } };
     }
     if (req.body.dateDeRendu) {
-        modification = {$set: {dateDeRendu: req.body.dateDeRendu}};
+        modification = { $set: { dateDeRendu: req.body.dateDeRendu } };
     }
     console.log(modification);
     Assignment.updateMany(critereRecherche, modification, { new: true }, (err, assignment) => {
