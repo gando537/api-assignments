@@ -25,7 +25,7 @@ router.post('/users/register', function (req, res) {
             if (err) return res.status(500).send("There was a problem registering the user.")
             // create a token
             var token = jwt.sign({ id: user._id }, config.secret, {
-                expiresIn: 86400 // expires in 24 hours
+                expiresIn: 3600 // expires in 1 hour
             });
             res.status(200).send({ auth: true, token: token });
         });
