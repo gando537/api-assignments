@@ -95,14 +95,81 @@ async function getAssignments(req, res) {
 }
 
 // Récupérer un assignment par son id (GET)
+// function getAssignment(req, res) {
+//     let assignmentId = req.params.id;
+
+//     Assignment.findOne({ id: assignmentId }, (err, assignment) => {
+//         if (err) { res.send(err) }
+//         res.json(assignment);
+//     });
+// }
+
 function getAssignment(req, res) {
     let assignmentId = req.params.id;
 
-    Assignment.findOne({ id: assignmentId }, (err, assignment) => {
-        if (err) { res.send(err) }
-        res.json(assignment);
-    })
+    // Création de la requête d'agrégation
+    Assignment.aggregate([
+        {
+            $match: { id: parseInt(assignmentId) } // Assurez-vous que l'id est un entier si c'est le cas
+        },
+        {
+            $lookup: {
+                from: 'eleves',
+                localField: '_idEleve',
+                foreignField: '_id',
+                as: 'eleve'
+            }
+        },
+        {
+            $unwind: {
+                path: '$eleve',
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: 'matieres',
+                localField: '_idMatiere',
+                foreignField: '_id',
+                as: 'matiere'
+            }
+        },
+        {
+            $unwind: {
+                path: '$matiere',
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $project: {
+                // Incluez ici les champs que vous souhaitez dans le document final
+                _id: 0,
+                id: 1,
+                nom: 1,
+                dateDeRendu: 1,
+                rendu: 1,
+                note: 1,
+                auteur: {
+                    $concat: ["$eleve.prenom", " ", "$eleve.nom"]
+                },
+                remarquesEleve: '$eleve.remarques',
+                matiere: {
+                    nom_matiere: '$matiere.nom_matiere',
+                    image_matiere: '$matiere.image_matiere',
+                    image_prof: '$matiere.image_prof',
+                },
+                // autres champs que vous souhaitez inclure
+            }
+        }
+    ]).then(result => {
+        // Le résultat est un tableau, donc prenez le premier élément
+        res.json(result[0]);
+    }).catch(err => {
+        console.error('Erreur lors de la récupération de l\'assignment:', err);
+        res.status(500).json({ message: 'Erreur serveur' });
+    });
 }
+
 
 async function postAssignment(req, res) {
     try {
