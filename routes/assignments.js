@@ -1,6 +1,7 @@
 let Assignment = require('../model/assignment');
 const Eleve = require('../model/eleve');
 const Matiere = require('../model/matiere');
+const Counters = require('../model/Counters');
 
 let lastInsertedId = 0; // Variable globale pour stocker la dernière ID ajoutée
 
@@ -170,11 +171,64 @@ function getAssignment(req, res) {
     });
 }
 
+async function getUniqueAssignments(req, res) {
+    try {
+        const uniqueAssignments = await Assignment.aggregate([
+            {
+                $lookup: {
+                    from: "matieres", // Nom de la collection Matiere
+                    localField: "_idMatiere", // Champ de correspondance dans Assignment
+                    foreignField: "_id", // Champ de correspondance dans Matiere
+                    as: "matiere_info" // Le résultat de la jointure
+                }
+            },
+            {
+                $unwind: "$matiere_info" // Déconstruit le tableau de matieres
+            },
+            {
+                $group: {
+                    _id: "$nom",
+                    dateDeRendu: { $first: "$dateDeRendu" }, // Prend la première dateDeRendu trouvée pour ce nom
+                    image_matiere: { $first: "$matiere_info.image_matiere" }, // Prend la première image_matiere trouvée pour ce nom
+                    nom_matiere: { $first: "$matiere_info.nom_matiere" } // Prend la première nom_matiere trouvée pour ce nom
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    nom: "$_id",
+                    dateDeRendu: 1, // Inclure dateDeRendu
+                    image_matiere: 1, // Inclure imageMatiere
+                    nom_matiere: 1 // Inclure nom_matiere
+                }
+            }
+        ]);
+
+        res.status(200).json(uniqueAssignments);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des devoirs uniques:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+}
+
+// Route pour supprimer tous les devoirs par nom
+async function deleteByName(req, res){
+    try {
+        const nom = req.params.nom;
+        await Assignment.deleteMany({ nom: nom });
+        console.log('Tous les devoirs pour le nom ' + nom + ' ont été supprimés');
+        res.status(200).json({ message: 'Tous les devoirs supprimés avec succès' });
+    } catch (error) {
+        console.error('Erreur lors de la suppression des devoirs:', error);
+        res.status(500).send('Erreur serveur');
+    }
+}
+
 
 async function postAssignment(req, res) {
     try {
+
         let assignment = new Assignment();
-        assignment.id = req.body.id;
         assignment.nom = req.body.nom;
         assignment.dateDeRendu = req.body.dateDeRendu;
         assignment.rendu = req.body.rendu;
@@ -192,7 +246,7 @@ async function postAssignment(req, res) {
                 const assignmentForEleve = {
                     _idEleve: eleve._id, // Utilisez l'ID de l'élève comme clé étrangère
                     _idMatiere: matiere._id, // Utilisez l'ID de la matière comme clé étrangère
-                    id: lastInsertedId + 1,
+                    id: await getNextSequence('assignmentId'),
                     nom: assignment.nom,
                     dateDeRendu: assignment.dateDeRendu,
                     rendu: random,
@@ -216,6 +270,16 @@ async function postAssignment(req, res) {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 }
+
+async function getNextSequence(name) {
+    const counter = await Counters.findOneAndUpdate(
+        { _id: name },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+    );
+    return counter.seq;
+}
+
 
 // Update d'un assignment (PUT)
 function updateAssignment(req, res) {
@@ -275,4 +339,4 @@ function RandomBoolean() {
 }
 
 
-module.exports = { getAssignments, postAssignment, getAssignment, updateAssignment, deleteAssignment, updateAssignmentByName };
+module.exports = { getAssignments, getUniqueAssignments, deleteByName, postAssignment, getAssignment, updateAssignment, deleteAssignment, updateAssignmentByName };

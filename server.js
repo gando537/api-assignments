@@ -17,7 +17,7 @@ const uri = 'mongodb+srv://gandohd:cdatltrnwbrTGCP9@cluster1.dupmfaf.mongodb.net
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useFindAndModify:false
+  useFindAndModify: false
 };
 
 mongoose.connect(uri, options)
@@ -25,11 +25,13 @@ mongoose.connect(uri, options)
     console.log("Connecté à la base MongoDB assignments dans le cloud !");
     console.log("at URI = " + uri);
     console.log("vérifiez with http://localhost:8010/api/db-angular-project que cela fonctionne")
-    },
+  },
     err => {
       console.log('Erreur de connexion: ', err);
     });
 
+const cors = require('cors');
+app.use(cors());
 // Pour accepter les connexions cross-domain (CORS)
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -42,7 +44,7 @@ app.use((req, res, next) => {
 const prefix = '/api';
 
 // Pour les formulaires
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // var UserController = require('./routes/UserController');
@@ -57,9 +59,15 @@ let port = process.env.PORT || 8010;
 app.route(prefix + '/db-angular-project')
   .get(assignment.getAssignments);
 
+app.route(prefix + '/db-angular-project/uniques')
+  .get(assignment.getUniqueAssignments);
+
 app.route(prefix + '/db-angular-project/:id')
   .get(assignment.getAssignment)
   .delete(assignment.deleteAssignment);
+
+app.route(prefix + '/db-angular-project/uniques/:nom')
+  .delete(assignment.deleteByName);
 
 // app.route(prefix + '/db-angular-project')
 //   .post(assignment.postAssignment)
