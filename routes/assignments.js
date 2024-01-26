@@ -3,8 +3,6 @@ const Eleve = require('../model/eleve');
 const Matiere = require('../model/matiere');
 const Counters = require('../model/Counters');
 
-let lastInsertedId = 0; // Variable globale pour stocker la dernière ID ajoutée
-
 async function getAssignments(req, res) {
     try {
         const searchTerm = req.query.search;
@@ -94,16 +92,6 @@ async function getAssignments(req, res) {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 }
-
-// Récupérer un assignment par son id (GET)
-// function getAssignment(req, res) {
-//     let assignmentId = req.params.id;
-
-//     Assignment.findOne({ id: assignmentId }, (err, assignment) => {
-//         if (err) { res.send(err) }
-//         res.json(assignment);
-//     });
-// }
 
 function getAssignment(req, res) {
     let assignmentId = req.params.id;
@@ -253,8 +241,6 @@ async function postAssignment(req, res) {
                     note: random == true ? Math.floor(Math.random() * 20) : null
                 };
 
-                lastInsertedId = assignmentForEleve.id;
-
                 // Ajoutez le document d'assignment à la collection "assignments"
                 await Assignment.create(assignmentForEleve);
             } else {
@@ -292,8 +278,6 @@ function updateAssignment(req, res) {
         } else {
             res.json({ message: 'updated' })
         }
-
-        // console.log('updated ', assignment)
     });
 }
 
@@ -317,19 +301,23 @@ function updateAssignmentByName(req, res) {
         } else {
             res.json({ message: 'updated' })
         }
-
-        // console.log('updated ', assignment)
     });
 }
 
 // suppression d'un assignment (DELETE)
 function deleteAssignment(req, res) {
 
-    Assignment.findByIdAndRemove(req.params.id, (err, assignment) => {
+    console.log("ID reçu pour suppression:", req.params.id);
+    Assignment.deleteOne({ id: req.params.id }, (err, assignment) => {
         if (err) {
-            res.send(err);
+            console.log(err);
+            res.status(500).send(err);
+        } else if (!assignment) {
+            res.status(404).json({ message: 'Assignment not found' });
+        } else {
+            console.log("Assignment supprimé :", assignment);
+            res.json({ message: `${assignment.nom} deleted` });
         }
-        res.json({ message: `${assignment.nom} deleted` });
     })
 }
 

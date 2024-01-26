@@ -46,21 +46,4 @@ router.get('/eleves/:id', function (req, res) {
     })
 });
 
-// DELETES A eleve FROM THE DATABASE
-// router.delete('/eleves/delete/:name', function (req, res) {
-//     Eleve.findByNameAndRemove(req.params.id, function (err, eleve) {
-//         if (err) return res.status(500).send("There was a problem deleting the eleve.");
-//         res.status(200).send("eleve: "+ eleve.name +" was deleted.");
-//     });
-// });
-
-// // UPDATES A SINGLE eleve IN THE DATABASE
-// router.put('/eleves/update/:id', function (req, res) {
-//     Eleve.findByIdAndUpdate(req.params.id, req.body, {new: true}, function (err, eleve) {
-//         if (err) return res.status(500).send("There was a problem updating the eleve.");
-//         res.status(200).send(eleve);
-//     });
-// });
-
-
 module.exports = router;

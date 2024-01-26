@@ -47,8 +47,6 @@ const prefix = '/api';
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// var UserController = require('./routes/UserController');
-// app.use(prefix+'/db-angular-project', UserController);
 app.use(prefix + '/db-angular-project', AuthController);
 app.use(prefix + '/db-angular-project', Eleve);
 app.use(prefix + '/db-angular-project', Matiere);
@@ -69,23 +67,14 @@ app.route(prefix + '/db-angular-project/:id')
 app.route(prefix + '/db-angular-project/uniques/:nom')
   .delete(assignment.deleteByName);
 
-// app.route(prefix + '/db-angular-project')
-//   .post(assignment.postAssignment)
-//   .put(assignment.updateAssignment);
-
 app.route(prefix + '/db-angular-project')
   .post(assignment.postAssignment)
   .put(assignment.updateAssignmentByName);
 
-// app.route(prefix + '/db-angular-project/users')
-//   .get(user.getUsers);
-
-// app.route(prefix + '/db-angular-project/users/:id')
-//   .get(user.getUser)
-//   .delete(user.deleteUser);
-
-// app.route(prefix + '/db-angular-project/users').post(user.postUser)
-//   .put(user.updateUser);
+  app.get('/test', (req, res) => {
+    res.send('Le serveur fonctionne!');
+  });
+  
 
 // On démarre le serveur
 app.listen(port, "0.0.0.0");
