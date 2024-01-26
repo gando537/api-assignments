@@ -71,10 +71,10 @@ app.route(prefix + '/db-angular-project')
   .post(assignment.postAssignment)
   .put(assignment.updateAssignmentByName);
 
-  app.get('/test', (req, res) => {
+  app.get('/', (req, res) => {
     res.send('Le serveur fonctionne!');
   });
-  
+
 
 // On démarre le serveur
 app.listen(port, "0.0.0.0");
