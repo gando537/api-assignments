@@ -15,7 +15,9 @@ let AssignmentSchema = Schema({
     matiere: [
       { nom_matiere : String },
       { image_matiere : String },
-      { image_prof : String }
+      { image_prof : String },
+      { nom_prof : String },
+      { prenom_prof : String },
     ]
 });
 AssignmentSchema.plugin(aggregatePaginate);

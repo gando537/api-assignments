@@ -14,7 +14,9 @@ router.post('/matieres/add', async function (req, res) {
             id : req.body.id,
             nom_matiere : nom_matiere,
             image_prof : req.body.image_prof,
-            image_matiere : image_matiere
+            image_matiere : image_matiere,
+            nom_prof : req.body.nom_prof,
+            prenom_prof : req.body.prenom_prof,
         },
         function (err, matiere) {
             if (err) return res.status(500).send("There was a problem adding the information to the database.");

@@ -5,7 +5,9 @@ let MatiereSchema = Schema({
     id: Number,
     nom_matiere : String,
     image_matiere : String,
-    image_prof : String
+    image_prof : String,
+    nom_prof : String,
+    prenom_prof : String,
 });
 mongoose.model('Matieres', MatiereSchema);
 module.exports = mongoose.model('Matieres');

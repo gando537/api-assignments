@@ -62,6 +62,8 @@ async function getAssignments(req, res) {
                     nom_matiere: '$matiere.nom_matiere',
                     image_matiere: '$matiere.image_matiere',
                     image_prof: '$matiere.image_prof',
+                    nom_prof: '$matiere.nom_prof',
+                    prenom_prof: '$matiere.prenom_prof',
                 },
             },
         });
@@ -146,6 +148,8 @@ function getAssignment(req, res) {
                     nom_matiere: '$matiere.nom_matiere',
                     image_matiere: '$matiere.image_matiere',
                     image_prof: '$matiere.image_prof',
+                    nom_prof: '$matiere.nom_prof',
+                    prenom_prof: '$matiere.prenom_prof',
                 },
                 // autres champs que vous souhaitez inclure
             }
@@ -178,7 +182,9 @@ async function getUniqueAssignments(req, res) {
                     _id: "$nom",
                     dateDeRendu: { $first: "$dateDeRendu" }, // Prend la première dateDeRendu trouvée pour ce nom
                     image_matiere: { $first: "$matiere_info.image_matiere" }, // Prend la première image_matiere trouvée pour ce nom
-                    nom_matiere: { $first: "$matiere_info.nom_matiere" } // Prend la première nom_matiere trouvée pour ce nom
+                    nom_matiere: { $first: "$matiere_info.nom_matiere" }, // Prend la première nom_matiere trouvée pour ce nom
+                    nom_prof: { $first: "$matiere_info.nom_prof" }, // Prend la première nom_prof trouvée pour ce nom
+                    prenom_prof: { $first: "$matiere_info.prenom_prof" }, // Prend la première prenom_prof trouvée pour ce nom
                 }
             },
             {
