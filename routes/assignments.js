@@ -297,11 +297,17 @@ function updateAssignmentByName(req, res) {
 
     const critereRecherche = { nom: req.body._id };
     let modification = {};
-    if (req.body.nom) {
+    if (req.body.nom && req.body.dateDeRendu) {
+        modification = { $set: { nom: req.body.nom, dateDeRendu: req.body.dateDeRendu } };
+    }
+    else if (req.body.nom ) {
         modification = { $set: { nom: req.body.nom } };
     }
-    if (req.body.dateDeRendu) {
+    else if (req.body.dateDeRendu) {
         modification = { $set: { dateDeRendu: req.body.dateDeRendu } };
+    }
+    else {
+        res.status(500).json({ message: 'Erreur serveur' });
     }
     console.log(modification);
     Assignment.updateMany(critereRecherche, modification, { new: true }, (err, assignment) => {
