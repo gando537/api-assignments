@@ -182,6 +182,7 @@ async function getUniqueAssignments(req, res) {
                     _id: "$nom",
                     dateDeRendu: { $first: "$dateDeRendu" }, // Prend la première dateDeRendu trouvée pour ce nom
                     image_matiere: { $first: "$matiere_info.image_matiere" }, // Prend la première image_matiere trouvée pour ce nom
+                    image_prof: { $first: "$matiere_info.image_prof" }, // Prend la première image_prof trouvée pour ce nom
                     nom_matiere: { $first: "$matiere_info.nom_matiere" }, // Prend la première nom_matiere trouvée pour ce nom
                     nom_prof: { $first: "$matiere_info.nom_prof" }, // Prend la première nom_prof trouvée pour ce nom
                     prenom_prof: { $first: "$matiere_info.prenom_prof" }, // Prend la première prenom_prof trouvée pour ce nom
@@ -192,6 +193,7 @@ async function getUniqueAssignments(req, res) {
                     _id: 0,
                     nom: "$_id",
                     dateDeRendu: 1, // Inclure dateDeRendu
+                    image_prof: 1, // Inclure imageProf
                     image_matiere: 1, // Inclure imageMatiere
                     nom_matiere: 1, // Inclure nom_matiere
                     nom_prof: 1, // Inclure nom_prof
