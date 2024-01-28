@@ -193,7 +193,9 @@ async function getUniqueAssignments(req, res) {
                     nom: "$_id",
                     dateDeRendu: 1, // Inclure dateDeRendu
                     image_matiere: 1, // Inclure imageMatiere
-                    nom_matiere: 1 // Inclure nom_matiere
+                    nom_matiere: 1, // Inclure nom_matiere
+                    nom_prof: 1, // Inclure nom_prof
+                    prenom_prof: 1, // Inclure prenom_prof
                 }
             }
         ]);
